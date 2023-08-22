@@ -1,7 +1,7 @@
 # Antifungal_Resistance_FKS1-FKS2_orthologs
 Mathieu Giguere's Summer 2023 internship at the LandryLab.
 Most coding files require to be in the same directory as Romain Durand's DMS-main repository. The code in my repository is made to work with it.
-Be careful with absolute and relative paths.
+Be careful with absolute and relative file paths.
 
 "allPreviousCode": All saves of my code. Mostly uncommented and unattended to.
 "MyPoster_GiguereMA_final_2023_08_17": My Poster for IBIS day 2023.

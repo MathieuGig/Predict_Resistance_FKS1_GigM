@@ -29,7 +29,7 @@ pd.set_option('max_colwidth', None)
 
 ########################################################################################################################
 
-# VIP. Very important parameter
+# VIP. Very important parameter. The Antifungal drug.
 drug = 'caspofungin'
 
 ########################################################################################################################
@@ -113,7 +113,7 @@ y_train = Single_merged['Resistance']
 
 ########################################################################################################################
 
-# Density plot of Singles
+# Density plot of Single mutations
 sns.histplot(data=Single_master, x='median_s', element='step')
 plt.title('Resistance Score Histogram', fontsize=24)
 plt.xlabel('Resistance score', fontsize=20)
