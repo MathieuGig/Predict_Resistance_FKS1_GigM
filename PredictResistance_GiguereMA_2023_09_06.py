@@ -179,26 +179,25 @@ y_test = Ortho_merged['Resistance']
 ## Machine Learning
 
 # Gridsearch & Random Forest
-grid = {'n_estimators': [75, 100, 125, 150, 200, 250],
-        'max_features': ['sqrt', 'log2', None],
-        'max_depth': [5, 6, 7, None],
-        'random_state': [18]
-}
+#grid = {'n_estimators': [75, 100, 125, 150, 200, 250],
+#        'max_features': ['sqrt', 'log2', None],
+#        'max_depth': [5, 6, 7, None],
+#        'random_state': [18]
+#}
 
-CV_rf = GridSearchCV(estimator=RandomForestClassifier(), param_grid=grid, n_jobs=-1, cv=10)
-CV_rf.fit(X_train, y_train)
+#CV_rf = GridSearchCV(estimator=RandomForestClassifier(), param_grid=grid, n_jobs=-1, cv=10)
+#CV_rf.fit(X_train, y_train)
 
-rf = CV_rf.best_estimator_
-print(CV_rf.best_params_)
+#rf = CV_rf.best_estimator_
+#print(CV_rf.best_params_)
 
-y_pred = rf.predict(X_test)
-
-
-#rf = RandomForestClassifier()
-#rf.fit(X_train, y_train)
 #y_pred = rf.predict(X_test)
+
+
+rf = RandomForestClassifier(n_estimators= 250, max_features= 'sqrt', max_depth= 5, random_state= 18)
+rf.fit(X_train, y_train)
+y_pred = rf.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
-#print(rf.get_params())
 print("Accuracy:", accuracy)
 
 # Matthews correlation coefficient
@@ -286,4 +285,5 @@ plt.title("ROC curve")
 plt.xlabel("False Positive rate")
 plt.ylabel("True positive rate")
 plt.legend(loc="best")
+plt.tight_layout
 plt.show()
