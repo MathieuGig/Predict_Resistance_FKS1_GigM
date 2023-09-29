@@ -266,3 +266,25 @@ plt.legend(loc= 'best')
 plt.tight_layout
 plt.savefig('ROCcurve.svg')
 plt.show()
+
+
+########################################################################################################################
+# Analyse des prédictions sur les orthologues
+
+df2 = pd.read_csv("TableauFKS1.csv") # This dataframe coems from my taxonomy analysis.
+df2 = df2.loc[df2["GapsHotspot1"] == False]
+df2 = df2[["Hotspot1", "Species", "Is_Human_Pathogen"]]
+
+df2.groupby(["Hotspot1"])[["Species"]].nunique().reset_index()
+df2.rename(columns={"Hotspot1": "aa_seq"}, inplace=True)
+
+Organise_Ortho = Ortho_master[["aa_seq", "Resistance"]]
+
+Ortho_Resistance = pd.merge(left=df2, right=Organise_Ortho, how="inner", indicator='location', suffixes=(None, "_1"), on='aa_seq')
+Ortho_Resistance = Ortho_Resistance.drop(columns=["location"])
+Ortho_Resistance = Ortho_Resistance.drop_duplicates()
+Ortho_Resistance = Ortho_Resistance.loc[Ortho_Resistance["Resistance"] == "resistant"]
+print(Ortho_Resistance)
+
+misclassified = np.where(y_pred != y_test)
+print(misclassified)
