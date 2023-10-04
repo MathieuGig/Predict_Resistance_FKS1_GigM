@@ -121,6 +121,7 @@ Ortho_master = shortMaster.loc[(shortMaster['seq_type'] == 'ortho') & (shortMast
 Ortho_master['Resistance'] = np.where(Ortho_master['median_s'] >= 1, 'resistant', 'susceptible')
 Ortho_master = Ortho_master.drop(columns=['aa_pos', 'alt_aa'])
 Ortho_master = Ortho_master.drop_duplicates()
+Ortho_master = Ortho_master.reset_index(drop=True)
 
 Ortho_master[['aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9']] = Ortho_master['aa_seq'].apply(lambda x: pd.Series(list(x)))
 
@@ -284,7 +285,12 @@ Ortho_Resistance = pd.merge(left=df2, right=Organise_Ortho, how="inner", indicat
 Ortho_Resistance = Ortho_Resistance.drop(columns=["location"])
 Ortho_Resistance = Ortho_Resistance.drop_duplicates()
 Ortho_Resistance = Ortho_Resistance.loc[Ortho_Resistance["Resistance"] == "resistant"]
-print(Ortho_Resistance)
 
 misclassified = np.where(y_pred != y_test)
-print(misclassified)
+List_misclassified = misclassified[0].tolist()
+Ortho_misclassified = Ortho_master.filter(items=List_misclassified, axis=0)
+Sequences_misclassified = Ortho_misclassified['aa_seq'].tolist()
+
+Ortho_Resistance['Misclassified'] = np.where(Ortho_Resistance['aa_seq'].isin(Sequences_misclassified), True, False)
+Ortho_Resistance.rename(columns={'Resistance':'Actual_Resistance'}, inplace=True)
+Ortho_Resistance.to_csv('Classification_Orthologs.csv', index=False)
