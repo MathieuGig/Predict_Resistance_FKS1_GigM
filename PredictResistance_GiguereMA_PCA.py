@@ -66,13 +66,17 @@ AAproperties.rename(columns={'Aminoacid.1.letter': 'aa1'}, inplace=True)
 # AAproperties[AAproperties.columns[1:]] = (AAproperties[AAproperties.columns[1:]]-AAproperties[AAproperties.columns[1:]].mean())/AAproperties[AAproperties.columns[1:]].std()
 AAproperties[AAproperties.columns[1:]] = StandardScaler().fit_transform(AAproperties[AAproperties.columns[1:]])
 
+print(AAproperties)
+pca = PCA(n_components=2)
+AAproperties_pca = pca.fit_transform(AAproperties[AAproperties.columns[1:]])
+new_prop = pd.DataFrame(AAproperties_pca)
+print(new_prop)
 
-pca = PCA(n_components=15)
-wow = pca.fit_transform(AAproperties[AAproperties.columns[1:]])
-print(wow)
+AAproperties = AAproperties[AAproperties.columns[:1]].join(new_prop)
+AAproperties.columns = AAproperties.columns.astype(str)
 
 ########################################################################################################################
-"""
+
 # Single mutations dataframe
 Single_master = shortMaster.loc[(shortMaster['seq_type'] == 'single') & (shortMaster['pool_type'] == 'single') & (shortMaster['strain'] == 'BY4741') & (shortMaster['locus'] == 'FKS1-HS1') & (shortMaster['compound'] == drug)]
 Single_master['Resistance'] = np.where(Single_master['median_s'] >= 1, 'resistant', 'susceptible')
@@ -297,5 +301,3 @@ plt.legend(loc= 'best')
 # plt.tight_layout
 plt.savefig('ROCcurve.svg')
 plt.show()
-
-"""

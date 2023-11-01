@@ -27,3 +27,5 @@ Wednesday octobrer 4th : 10h to 11h (1). Ortholog classification dataframe for R
 Wednesday october 25h : 9h to 15h (6).
 
 Friday october 27th : 9h to 15h (6). Work on PCA.
+
+Wednesday november 1st : (6). PCA + Predict on singles of another drug.
