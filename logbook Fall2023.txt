@@ -28,4 +28,6 @@ Wednesday october 25h : 9h to 15h (6).
 
 Friday october 27th : 9h to 15h (6). Work on PCA.
 
-Wednesday november 1st : (6). PCA + Predict on singles of another drug.
+Wednesday november 1st : (6). Work on PCA.
+
+Wednesday november 8th : (3). Work on PCA + Predict on singles of another drug.

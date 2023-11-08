@@ -12,7 +12,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-
+import random
 import glob
 import os
 
@@ -63,20 +63,132 @@ AAproperties.rename(columns={'Aminoacid.1.letter': 'aa1'}, inplace=True)
 
 ## Standardization & PCA
 
-# AAproperties[AAproperties.columns[1:]] = (AAproperties[AAproperties.columns[1:]]-AAproperties[AAproperties.columns[1:]].mean())/AAproperties[AAproperties.columns[1:]].std()
-AAproperties[AAproperties.columns[1:]] = StandardScaler().fit_transform(AAproperties[AAproperties.columns[1:]])
+# Standardization
+#AAproperties[AAproperties.columns[1:]] = StandardScaler().fit_transform(AAproperties[AAproperties.columns[1:]])
 
-print(AAproperties)
+# PCA
+#pca = PCA(n_components=2)
+#AAproperties_pca = pca.fit_transform(AAproperties[AAproperties.columns[1:]])
+#new_prop = pd.DataFrame(AAproperties_pca)
+
+#AAproperties = AAproperties[AAproperties.columns[:1]].join(new_prop)
+#AAproperties.columns = AAproperties.columns.astype(str)
+#print(pca.explained_variance_ratio_)
+
+# 2D Biplot
+X = AAproperties[AAproperties.columns[1:]]
+y = AAproperties[AAproperties.columns[:1]]
+
+# Scale Data
+x_scaled = StandardScaler().fit_transform(X)
+
+# Perform PCA on Scaled Data
 pca = PCA(n_components=2)
-AAproperties_pca = pca.fit_transform(AAproperties[AAproperties.columns[1:]])
-new_prop = pd.DataFrame(AAproperties_pca)
-print(new_prop)
 
-AAproperties = AAproperties[AAproperties.columns[:1]].join(new_prop)
-AAproperties.columns = AAproperties.columns.astype(str)
+pca_features = pca.fit_transform(x_scaled)
+
+# Principal components correlation coefficients
+loadings = pca.components_
+
+# Number of features before PCA
+n_features = pca.n_features_in_
+
+# Feature names before PCA
+feature_names = AAproperties[AAproperties.columns[1:]].columns
+
+# PC names
+pc_list = [f'PC{i}' for i in list(range(1, n_features + 1))]
+
+# Match PC names to loadings
+pc_loadings = dict(zip(pc_list, loadings))
+
+# Matrix of corr coefs between feature names and PCs
+loadings_df = pd.DataFrame.from_dict(pc_loadings)
+loadings_df['feature_names'] = feature_names
+loadings_df = loadings_df.set_index('feature_names')
+
+# Get the loadings of x and y axes
+xs = loadings[0]
+ys = loadings[1]
+
+# Create DataFrame from PCA
+pca_df = pd.DataFrame(
+    data=pca_features,
+    columns=['PC1', 'PC2'])
+
+# Map Targets to names
+target_names = {
+    0: 'A',
+    1: 'C',
+    2: 'D',
+    3: 'E',
+    4: 'F',
+    5: 'G',
+    6: 'H',
+    7: 'I',
+    8: 'K',
+    9: 'L',
+    10: 'M',
+    11: 'N',
+    12: 'P',
+    13: 'Q',
+    14: 'R',
+    15: 'S',
+    16: 'T',
+    17: 'V',
+    18: 'W',
+    19: 'Y',
+}
+
+pca_df['target'] = y
+#pca_df['target'] = pca_df['target'].map(target_names)
+
+# Scale PCS into a DataFrame
+pca_df_scaled = pca_df.copy()
+
+scaler_df = pca_df[['PC1', 'PC2']]
+scaler = 1 / (scaler_df.max() - scaler_df.min())
+
+for index in scaler.index:
+    pca_df_scaled[index] *= scaler[index]
+
+# Plot the loadings on a Scatter plot
+xs = loadings[0]
+ys = loadings[1]
+
+sns.lmplot(
+    x='PC1',
+    y='PC2',
+    data=pca_df_scaled,
+    fit_reg=False,
+)
+
+for i, varnames in enumerate(feature_names):
+    plt.scatter(xs[i], ys[i], s=200)
+    plt.arrow(
+        0, 0,  # coordinates of arrow base
+        xs[i],  # length of the arrow along x
+        ys[i],  # length of the arrow along y
+        color='r',
+        head_width=0.01
+    )
+    if xs[i] >= 0.1 and ys[i] >= 0.1 :
+        plt.text(xs[i], ys[i] + random.uniform(0, 0.3), varnames)
+
+xticks = np.linspace(-0.8, 0.8, num=5)
+yticks = np.linspace(-0.8, 0.8, num=5)
+plt.xticks(xticks)
+plt.yticks(yticks)
+plt.xlabel('PC1')
+plt.ylabel('PC2')
+
+plt.title('2D Biplot')
+plt.tight_layout()
+plt.savefig('2Dbiplot_PCA.svg')
+plt.show()
 
 ########################################################################################################################
-
+"""
 # Single mutations dataframe
 Single_master = shortMaster.loc[(shortMaster['seq_type'] == 'single') & (shortMaster['pool_type'] == 'single') & (shortMaster['strain'] == 'BY4741') & (shortMaster['locus'] == 'FKS1-HS1') & (shortMaster['compound'] == drug)]
 Single_master['Resistance'] = np.where(Single_master['median_s'] >= 1, 'resistant', 'susceptible')
@@ -301,3 +413,5 @@ plt.legend(loc= 'best')
 # plt.tight_layout
 plt.savefig('ROCcurve.svg')
 plt.show()
+
+"""
