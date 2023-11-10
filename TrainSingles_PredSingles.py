@@ -22,9 +22,13 @@ pd.set_option('max_colwidth', None)
 ########################################################################################################################
 
 # VIP. Very important parameter. The antifungal drugs.
-drug2 = 'caspofungin'
-
+#drug1 = 'caspofungin'
+#drug1 = 'micafungin'
 drug1 = 'anidulafungin'
+
+drug2 = 'caspofungin'
+#drug2 = 'micafungin'
+#drug2 = 'anidulafungin'
 
 ########################################################################################################################
 
@@ -197,7 +201,83 @@ sns.set(font_scale=3)
 sns.heatmap(cmatrix, annot=True, fmt='d', cmap='Blues', xticklabels=['resistant', 'susceptible'], yticklabels=['resistant', 'susceptible'], annot_kws={"size": 60})
 plt.xlabel('Predicted Label')
 plt.ylabel('True Label')
-plt.title(f'Caspofungin Confusion Matrix \n Accuracy : {accuracy:.3f}')
+plt.title(f'Train: {drug1} \n Pred: {drug2} \n Confusion Matrix \n Accuracy : {accuracy:.3f}')
 plt.tight_layout()
-#plt.savefig(f'Conf_matrix.svg')
+plt.savefig(f'{drug1}_toPredict_{drug2}_ConfMatrix.svg')
 plt.show()
+
+########################################################################################################################
+
+# shap
+explainer = shap.TreeExplainer(rf)
+shap_values = explainer.shap_values(X_test)
+shap.summary_plot(shap_values[0], X_test, show=False, plot_size=(16,8), max_display=6)
+
+#plt.title(f'Train: {drug1} \n Pred: {drug2} \n feature importance')
+plt.gca().set_facecolor('white')
+plt.grid(False)
+
+# Modifying main plot parameters
+plt.gca().tick_params(labelsize=20)
+plt.gca().set_xlabel("SHAP value (impact on model output)", fontsize=20)
+plt.gca().set_title(f'Train: {drug1} \n Pred: {drug2} \n Feature Importance', fontsize=24)
+
+# Get colorbar
+cb_ax = plt.gcf().axes[1]
+
+# Modifying color bar parameters
+cb_ax.tick_params(labelsize=20)
+cb_ax.set_ylabel("Feature value", fontsize=20)
+
+# Adjust dot size
+summary_plot = plt.gcf()
+for scatter in summary_plot.axes[0].collections:
+    scatter.set_sizes([100])  # Adjust the size as needed
+
+"""
+# Define the custom y-axis tick labels you want to display for each feature
+custom_ytick_labels = {
+    'hydrophobicity_miyazawa': 'Position 1 Hydrophobicity Miyazawa',
+    'hydrophobicity_guy': 'Position 1 Hydrophobicity Guy',
+    'retention_coefficient_ph2.1_meek': 'Position 1 Retention Coefficient ph2.1 Meek',
+    'percentage_accessible_residues_janin': 'Position 1 %Accessible Residues Janin',
+    'hydrophobicity_antigenicity_welling_aa6': 'Position 6 Hydrophobicity Welling',
+    'beta_sheet_levitt_aa9': 'Position 9 Beta Sheet Levitt',
+}
+# Create a function to get the custom label for a feature
+def get_custom_label(feature):
+    return custom_ytick_labels.get(feature, feature)
+
+# Get the current y-axis tick labels
+y_tick_labels = plt.gca().get_yticklabels()# Replace the y-axis tick labels with custom labels
+custom_y_tick_labels = [get_custom_label(feature.get_text()) for feature in y_tick_labels]
+plt.gca().set_yticklabels(custom_y_tick_labels)
+"""
+
+plt.tight_layout()
+plt.savefig(f'{drug1}_toPredict_{drug2}_Shap.svg')
+plt.show()
+
+
+########################################################################################################################
+
+# ROC curves
+proba = rf.predict_proba(X_test)[::,1]
+fpr, tpr, thresh = roc_curve(y_test, proba, pos_label='susceptible')
+auc_score = roc_auc_score(y_test, proba)
+print(f"AUC : {auc_score}")
+
+random_probs = [0 for i in range(len(y_test))]
+p_fpr, p_tpr, p_thresh = roc_curve(y_test, random_probs, pos_label='susceptible')
+
+plt.figure(figsize=(15, 20))
+plt.plot(fpr, tpr, color='blue', label= 'Random Forest Classifier')
+plt.plot(p_fpr, p_tpr, linestyle='--', color='orange')
+plt.title(f'Train: {drug1} \n Pred: {drug2} \n Model ROC curve \n AUC : {auc_score:.3f}')
+plt.xlabel('False Positive rate')
+plt.ylabel('True positive rate')
+plt.legend(loc= 'best')
+plt.savefig(f'{drug1}_toPredict_{drug2}_ROC.svg')
+plt.show()
+
+########################################################################################################################
