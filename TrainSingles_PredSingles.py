@@ -281,3 +281,30 @@ plt.savefig(f'{drug1}_toPredict_{drug2}_ROC.svg')
 plt.show()
 
 ########################################################################################################################
+
+## WebLogo generation of the confusion Matrix sequences.
+
+# Make dataframe with these columns: sequence, true label, classification label, misclassifed.
+
+SummaryData = Drug1_merged[["aa_seq", "Resistance"]]
+
+# Find misclassified
+misclassified = np.where(y_pred != y_test)
+List_misclassified = misclassified[0].tolist()
+
+SummaryData['misclassified'] = np.where(SummaryData.index.isin(List_misclassified), True, False)
+SummaryData['Prediction'] = np.where((SummaryData['misclassified'] == True) &
+                                     (SummaryData['Resistance'] == 'susceptible'), 'resistant' ,
+                                     np.where((SummaryData['misclassified'] == True) &
+                                              (SummaryData['Resistance'] == 'resistant'),
+                                              'susceptible' , SummaryData['Resistance']))
+
+# Use code: GenerateWebLogos
+# Define conditions
+#V_Caspo_Mica = df.loc[(df['Resistant_Caspofungin'] == False) & (df['Resistant_Micafungin'] == False)]
+#Put into string
+#V_Caspo_Mica_sequences = np.array2string(V_Caspo_Mica['Sequence'].values)
+# Call GenerateWebLogo
+#GenerateWebLogo(V_Caspo_Mica_sequences, f'V3_{strain}_{locus}_Caspo_Mica_V')
+
+# It prints the command you can use in a terminal to generate WebLogos using ...

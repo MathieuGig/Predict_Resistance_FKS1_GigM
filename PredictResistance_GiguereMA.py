@@ -60,6 +60,11 @@ AAproperties.rename(columns={'Aminoacid.1.letter': 'aa1'}, inplace=True)
 Single_master = shortMaster.loc[(shortMaster['seq_type'] == 'single') & (shortMaster['pool_type'] == 'single') & (shortMaster['strain'] == 'BY4741') & (shortMaster['locus'] == 'FKS1-HS1') & (shortMaster['compound'] == drug)]
 Single_master['Resistance'] = np.where(Single_master['median_s'] >= 1, 'resistant', 'susceptible')
 
+# Remove duplicates
+#Single_master = Single_master.drop(columns=['median_s'])
+#Single_master = Single_master.drop_duplicates()
+#Single_master = Single_master.reset_index(drop=True)
+
 Single_master[['aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9']] = Single_master['aa_seq'].apply(lambda x: pd.Series(list(x)))
 
 Single_merged = pd.merge(left=Single_master, right=AAproperties, how='inner', indicator='location1', suffixes=(None, '_aa1'),
@@ -105,14 +110,14 @@ y_train = Single_merged['Resistance']
 ########################################################################################################################
 
 # Density plot of Single mutations
-sns.histplot(data=Single_master, x='median_s', element='step')
-plt.title('Resistance Score Histogram', fontsize=24)
-plt.xlabel('Resistance score', fontsize=20)
-plt.ylabel('Count', fontsize=20)
-plt.gca().tick_params(labelsize=18)
-plt.tight_layout()
-plt.savefig('SinglesDensity.svg')
-plt.show()
+#sns.histplot(data=Single_master, x='median_s', element='step')
+#plt.title('Resistance Score Histogram', fontsize=24)
+#plt.xlabel('Resistance score', fontsize=20)
+#plt.ylabel('Count', fontsize=20)
+#plt.gca().tick_params(labelsize=18)
+#plt.tight_layout()
+#plt.savefig('SinglesDensity.svg')
+#plt.show()
 
 ########################################################################################################################
 
@@ -120,6 +125,7 @@ plt.show()
 Ortho_master = shortMaster.loc[(shortMaster['seq_type'] == 'ortho') & (shortMaster['pool_type'] == 'single') & (shortMaster['strain'] == 'BY4741') & (shortMaster['locus'] == 'FKS1-HS1') & (shortMaster['compound'] == drug)]
 Ortho_master['Resistance'] = np.where(Ortho_master['median_s'] >= 1, 'resistant', 'susceptible')
 Ortho_master = Ortho_master.drop(columns=['aa_pos', 'alt_aa'])
+# Ortho_master = Ortho_master.drop(columns=['aa_pos', 'alt_aa', 'median_s'])
 Ortho_master = Ortho_master.drop_duplicates()
 Ortho_master = Ortho_master.reset_index(drop=True)
 
