@@ -35,3 +35,5 @@ Wednesday november 8th : (3). Work on PCA + Predict on singles of another drug.
 Friday november 10th : (3). Predict on singles of another drug.
 
 Wednesday november 15th : (3). Predict on singles of another drug.
+
+Friday november 17th : (4). Gridsearch predict on singles.

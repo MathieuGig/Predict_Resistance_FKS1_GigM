@@ -165,23 +165,31 @@ y_test = Drug2_merged['Resistance']
 ## Machine Learning
 
 # Gridsearch & Random Forest
-#grid = {'n_estimators': [75, 100, 125, 150, 200, 250],
-#        'max_features': ['sqrt', 'log2', None],
-#        'max_depth': [5, 6, 7, None],
-#        'random_state': [18]
-#}
+grid = {'n_estimators': [100, 125, 150, 200, 250, 300, 400, 500, 600],
+        'max_features': ['sqrt', 'log2', None],
+        'max_depth': [5, 6, 7, None],
+        'random_state': [18]
+}
 
-#CV_rf = GridSearchCV(estimator=RandomForestClassifier(), param_grid=grid, n_jobs=-1, cv=10)
-#CV_rf.fit(X_train, y_train)
+CV_rf = GridSearchCV(estimator=RandomForestClassifier(), param_grid=grid, n_jobs=-1, cv=10)
+CV_rf.fit(X_train, y_train)
 
-#rf = CV_rf.best_estimator_
-#print(CV_rf.best_params_)
+rf = CV_rf.best_estimator_
+print(CV_rf.best_params_)
 
-#y_pred = rf.predict(X_test)
+# rf best parameters by drugs according to GridSearchCV.
+# Train: caspofungin. Pred: anidulafungin
+# Train: caspofungin. Pred: micafungin
+# Train: anidulafungin. Pred: caspofungin
+# Train: anidulafungin. Pred: micafungin
+#rf = RandomForestClassifier(n_estimators= 500, max_features= 'sqrt', max_depth= 5, random_state= 18)
 
-rf = RandomForestClassifier(n_estimators= 250, max_features= 'sqrt', max_depth= 5, random_state= 18)
+# Train: micafungin. Pred: caspofungin
+# Train: micafungin. Pred: anidulafungin
+#rf = RandomForestClassifier(n_estimators= 200, max_features= 'sqrt', max_depth= None, random_state= 18)
 
-rf.fit(X_train, y_train)
+#rf.fit(X_train, y_train)
+
 y_pred = rf.predict(X_test)
 
 accuracy = accuracy_score(y_test, y_pred)
@@ -265,7 +273,7 @@ plt.show()
 proba = rf.predict_proba(X_test)[::,1]
 fpr, tpr, thresh = roc_curve(y_test, proba, pos_label='susceptible')
 auc_score = roc_auc_score(y_test, proba)
-print(f"AUC : {auc_score}")
+#print(f"AUC : {auc_score}")
 
 random_probs = [0 for i in range(len(y_test))]
 p_fpr, p_tpr, p_thresh = roc_curve(y_test, random_probs, pos_label='susceptible')
