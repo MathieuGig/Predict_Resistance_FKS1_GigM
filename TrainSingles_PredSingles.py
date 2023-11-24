@@ -15,6 +15,8 @@ import os
 import shap # v0.39.0
 shap.initjs()
 
+#from GenerateWebLogo import GenerateWebLogo
+
 pd.set_option('display.max_columns', None)
 pd.set_option('display.expand_frame_repr', False)
 pd.set_option('max_colwidth', None)
@@ -165,30 +167,30 @@ y_test = Drug2_merged['Resistance']
 ## Machine Learning
 
 # Gridsearch & Random Forest
-grid = {'n_estimators': [100, 125, 150, 200, 250, 300, 400, 500, 600],
-        'max_features': ['sqrt', 'log2', None],
-        'max_depth': [5, 6, 7, None],
-        'random_state': [18]
-}
+#grid = {'n_estimators': [100, 125, 150, 200, 250, 300, 400, 500, 600],
+#        'max_features': ['sqrt', 'log2', None],
+#        'max_depth': [5, 6, 7, None],
+#        'random_state': [18]
+#}
 
-CV_rf = GridSearchCV(estimator=RandomForestClassifier(), param_grid=grid, n_jobs=-1, cv=10)
-CV_rf.fit(X_train, y_train)
+#CV_rf = GridSearchCV(estimator=RandomForestClassifier(), param_grid=grid, n_jobs=-1, cv=10)
+#CV_rf.fit(X_train, y_train)
 
-rf = CV_rf.best_estimator_
-print(CV_rf.best_params_)
+#rf = CV_rf.best_estimator_
+#print(CV_rf.best_params_)
 
 # rf best parameters by drugs according to GridSearchCV.
 # Train: caspofungin. Pred: anidulafungin
 # Train: caspofungin. Pred: micafungin
 # Train: anidulafungin. Pred: caspofungin
 # Train: anidulafungin. Pred: micafungin
-#rf = RandomForestClassifier(n_estimators= 500, max_features= 'sqrt', max_depth= 5, random_state= 18)
+rf = RandomForestClassifier(n_estimators= 500, max_features= 'sqrt', max_depth= 5, random_state= 18)
 
 # Train: micafungin. Pred: caspofungin
 # Train: micafungin. Pred: anidulafungin
 #rf = RandomForestClassifier(n_estimators= 200, max_features= 'sqrt', max_depth= None, random_state= 18)
 
-#rf.fit(X_train, y_train)
+rf.fit(X_train, y_train)
 
 y_pred = rf.predict(X_test)
 
@@ -211,7 +213,7 @@ plt.xlabel('Predicted Label')
 plt.ylabel('True Label')
 plt.title(f'Train: {drug1} \n Pred: {drug2} \n Confusion Matrix \n Accuracy : {accuracy:.3f}')
 plt.tight_layout()
-plt.savefig(f'{drug1}_toPredict_{drug2}_ConfMatrix.svg')
+plt.savefig(f'ConfMatrix_{drug1}_toPredict_{drug2}.svg')
 plt.show()
 
 ########################################################################################################################
@@ -238,9 +240,9 @@ cb_ax.tick_params(labelsize=20)
 cb_ax.set_ylabel("Feature value", fontsize=20)
 
 # Adjust dot size
-summary_plot = plt.gcf()
-for scatter in summary_plot.axes[0].collections:
-    scatter.set_sizes([100])  # Adjust the size as needed
+#summary_plot = plt.gcf()
+#for scatter in summary_plot.axes[0].collections:
+#    scatter.set_sizes([100])  # Adjust the size as needed
 
 """
 # Define the custom y-axis tick labels you want to display for each feature
@@ -263,7 +265,7 @@ plt.gca().set_yticklabels(custom_y_tick_labels)
 """
 
 plt.tight_layout()
-plt.savefig(f'{drug1}_toPredict_{drug2}_Shap.svg')
+#plt.savefig(f'{drug1}_toPredict_{drug2}_Shap.svg')
 plt.show()
 
 
@@ -284,8 +286,8 @@ plt.plot(p_fpr, p_tpr, linestyle='--', color='orange')
 plt.title(f'Train: {drug1} \n Pred: {drug2} \n Model ROC curve \n AUC : {auc_score:.3f}')
 plt.xlabel('False Positive rate')
 plt.ylabel('True positive rate')
-plt.legend(loc= 'best')
-plt.savefig(f'{drug1}_toPredict_{drug2}_ROC.svg')
+plt.legend(loc='best')
+#plt.savefig(f'{drug1}_toPredict_{drug2}_ROC.svg')
 plt.show()
 
 ########################################################################################################################
@@ -294,7 +296,7 @@ plt.show()
 
 # Make dataframe with these columns: sequence, true label, classification label, misclassifed.
 
-SummaryData = Drug1_merged[["aa_seq", "Resistance"]]
+SummaryData = Drug2_merged[["aa_seq", "Resistance"]]
 
 # Find misclassified
 misclassified = np.where(y_pred != y_test)
@@ -302,17 +304,33 @@ List_misclassified = misclassified[0].tolist()
 
 SummaryData['misclassified'] = np.where(SummaryData.index.isin(List_misclassified), True, False)
 SummaryData['Prediction'] = np.where((SummaryData['misclassified'] == True) &
-                                     (SummaryData['Resistance'] == 'susceptible'), 'resistant' ,
+                                     (SummaryData['Resistance'] == 'susceptible'), 'resistant',
                                      np.where((SummaryData['misclassified'] == True) &
                                               (SummaryData['Resistance'] == 'resistant'),
-                                              'susceptible' , SummaryData['Resistance']))
+                                              'susceptible', SummaryData['Resistance']))
+
+#SummaryData['Prediction'] = y_pred
+#SummaryData['misclassified'] = np.where(SummaryData['Resistance'] != SummaryData['Prediction'], True, False)
 
 # Use code: GenerateWebLogos
 # Define conditions
-#V_Caspo_Mica = df.loc[(df['Resistant_Caspofungin'] == False) & (df['Resistant_Micafungin'] == False)]
-#Put into string
-#V_Caspo_Mica_sequences = np.array2string(V_Caspo_Mica['Sequence'].values)
-# Call GenerateWebLogo
-#GenerateWebLogo(V_Caspo_Mica_sequences, f'V3_{strain}_{locus}_Caspo_Mica_V')
+# R = Resistant. S = Susceptible. RR = sequence resistant et prediction resistante
+df_RR = SummaryData.loc[(SummaryData['Resistance'] == 'resistant') & (SummaryData['Prediction'] == 'resistant')]
+Seq_RR = np.array2string(df_RR['aa_seq'].values)
+#GenerateWebLogo(Seq_RR, f'RR_{drug1}_{drug2}')
 
+df_SS = SummaryData.loc[(SummaryData['Resistance'] == 'susceptible') & (SummaryData['Prediction'] == 'susceptible')]
+Seq_SS = np.array2string(df_SS['aa_seq'].values)
+#GenerateWebLogo(Seq_SS, f'SS_{drug1}_{drug2}')
+
+df_RS = SummaryData.loc[(SummaryData['Resistance'] == 'resistant') & (SummaryData['Prediction'] == 'susceptible')]
+Seq_RS = np.array2string(df_RS['aa_seq'].values)
+#GenerateWebLogo(Seq_RS, f'RS_{drug1}_{drug2}')
+
+df_SR = SummaryData.loc[(SummaryData['Resistance'] == 'susceptible') & (SummaryData['Prediction'] == 'resistant')]
+Seq_SR = np.array2string(df_SR['aa_seq'].values)
+#GenerateWebLogo(Seq_SR, f'SR_{drug1}_{drug2}')
+
+#Put into string
+# Call GenerateWebLogo
 # It prints the command you can use in a terminal to generate WebLogos using ...

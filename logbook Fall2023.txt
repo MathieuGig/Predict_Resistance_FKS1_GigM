@@ -37,3 +37,7 @@ Friday november 10th : (3). Predict on singles of another drug.
 Wednesday november 15th : (3). Predict on singles of another drug.
 
 Friday november 17th : (4). Gridsearch predict on singles.
+
+Wednesday november 22th: (3). Weblogos of predictions on singles.
+
+Friday november 24th: (3). Powerpoint Weblogos + Code management.
