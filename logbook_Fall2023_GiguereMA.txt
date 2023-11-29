@@ -1,4 +1,5 @@
 logbook Fall 2023
+Mathieu's work schedule for Fall 2023
 
 Wednesday september 6th : 13h30 to 16h30 (3). Configure PC and work on ROC curves.
 
@@ -40,4 +41,6 @@ Friday november 17th : (4). Gridsearch predict on singles.
 
 Wednesday november 22th: (3). Weblogos of predictions on singles.
 
-Friday november 24th: (3). Powerpoint Weblogos + Code management.
+Friday november 24th: (3). Powerpoint Weblogos.
+
+Wednesday november 29th: (3). Code management.
