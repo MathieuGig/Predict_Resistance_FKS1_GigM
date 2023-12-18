@@ -25,7 +25,7 @@ Monday october 2nd : 13h to 16h + 19h to 22h (6). Work on FRQNT grant.
 
 Wednesday octobrer 4th : 10h to 11h (1). Ortholog classification dataframe for Romain.
 
-Wednesday october 25h : 9h to 15h (6).
+Wednesday october 25h : 9h to 15h (6). SVM trial.
 
 Friday october 27th : 9h to 15h (6). Work on PCA.
 
