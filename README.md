@@ -8,7 +8,7 @@ Folders :\
 
 Files :\
 'all_indices_final_table_propensity.txt' : The amino acid properties used as features for machine learning.\
-'GenerateWebLogo_GiguereMA_2023_11_29' : Python code. A function which generates a command for 'weblogo3' you can copy-paste in a terminal.\
+'GenerateWebLogo_GiguereMA_2023_11_29' : Python code. A function which generates a command for 'WebLogo 3' you can copy-paste in a terminal.\
 'logbook_Fall2023_GiguereMA.txt' : The logbook of my work during Fall 2023.\
 'PredictResistance_GiguereMA_2023_11_29.py' : Python code to predict the resistance of FKS1 orthologs to echinocandins.\
 'PredictResSinglesOtherDrug_Giguere_MA_2023_11_29.py' : Python code to predict the resistance of FKS1 single mutants to different echinocandins.\
