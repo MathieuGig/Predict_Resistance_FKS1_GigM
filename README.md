@@ -1,7 +1,6 @@
 # Predict_Resistance_FKS1
 Mathieu Giguère's Summer 2023 internship at the LandryLab. + Fall 2023 work.\
-Most coding files require to be in the same directory as Romain Durand's DMS-main repository. The code in my repository is made to work with it.
-Be careful with absolute and relative file paths.
+Most coding files require to be in the same directory as Romain Durand's 'DMS-main' repository. The code in my repository is made to work with it. Be careful with absolute and relative file paths.
 
 Folders :\
 'Other' : All previous saves of my code. Mostly uncommented and unattended to.\
@@ -9,6 +8,7 @@ Folders :\
 
 Files :\
 'all_indices_final_table_propensity.txt' : The amino acid properties used as features for machine learning.\
+'GenerateWebLogo_GiguereMA_2023_11_29' : Python code. A function which generates a command for 'weblogo3' you can copy-paste in a terminal.\
 'logbook_Fall2023_GiguereMA.txt' : The logbook of my work during Fall 2023.\
 'PredictResistance_GiguereMA_2023_11_29.py' : Python code to predict the resistance of FKS1 orthologs to echinocandins.\
 'PredictResSinglesOtherDrug_Giguere_MA_2023_11_29.py' : Python code to predict the resistance of FKS1 single mutants to different echinocandins.\
