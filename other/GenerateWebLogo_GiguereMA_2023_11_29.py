@@ -1,3 +1,8 @@
+## Title: GenerateWebLogo
+## Author: Mathieu Giguere
+## Brief: Uses regex to format a list of strings into a file with 1 string per line,
+##        then prints a command for "weblogo3" that can be copy-pasted into a terminal.
+
 import pandas as pd
 import numpy as np
 import re
