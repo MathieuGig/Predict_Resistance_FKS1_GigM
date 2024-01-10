@@ -3,8 +3,8 @@
 ## Brief: Uses machine learning to predict the resistance of FKS1-HS1 Orthologs amino acid sequences to an
 ##        antifungal drug by training a model on Single mutants amino acid sequences.
 ##        The model uses Expasy Protscale's amino acid properties as features.
-## Preconditions: Needs Romain Durand's 'DMS-main' repository and 'all_indices_final_table_propensity.txt'. and
-##                'TableauFKS1.csv'.
+## Preconditions: Needs Romain Durand's 'DMS-main' repository and 'aminoAcidProperties.txt'. and
+##                'fks1_dataframe.csv'.
 
 # importing modules and packages
 import pandas as pd
@@ -59,7 +59,7 @@ shortMaster = shortMaster.loc[shortMaster['compound'].isin(['anidulafungin', 'ca
 ########################################################################################################################
 
 # Amino acid properties
-AAproperties = pd.read_table('all_indices_final_table_propensity.txt')
+AAproperties = pd.read_table('aminoAcidProperties.txt')
 AAproperties.rename(columns={'Aminoacid.1.letter': 'aa1'}, inplace=True)
 
 ########################################################################################################################
@@ -292,7 +292,7 @@ plt.show()
 # Analysis of the model's predictions
 
 # Setup dataframe of orthologs.
-df2 = pd.read_csv("TableauFKS1.csv") # This dataframe comes from my taxonomy analysis.
+df2 = pd.read_csv("fks1_dataframe.csv") # This dataframe comes from my taxonomy analysis.
 df2 = df2.loc[df2["GapsHotspot1"] == False]
 df2 = df2[["Hotspot1", "Species", "Is_Human_Pathogen"]]
 

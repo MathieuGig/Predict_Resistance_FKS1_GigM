@@ -56,7 +56,7 @@ shortMaster = shortMaster.loc[shortMaster['compound'].isin(['anidulafungin', 'ca
 ########################################################################################################################
 
 # Amino acid properties
-AAproperties = pd.read_table('all_indices_final_table_propensity.txt')
+AAproperties = pd.read_table('aminoAcidProperties.txt')
 AAproperties.rename(columns={'Aminoacid.1.letter': 'aa1'}, inplace=True)
 
 ########################################################################################################################

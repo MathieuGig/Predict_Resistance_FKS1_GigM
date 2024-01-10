@@ -3,8 +3,8 @@
 ## Brief: Uses machine learning to predict the resistance of FKS1-HS1 single mutants amino acid sequences to an
 ##        antifungal drug by training a model on the same single mutants amino acid sequences exposed to another drug.
 ##        The model uses Expasy Protscale's amino acid properties as features.
-## Preconditions: Needs Romain Durand's 'DMS-main' repository and 'all_indices_final_table_propensity.txt'. and
-##                'TableauFKS1.csv' and the 'GenerateWebLogo' function from the 'GenerateWebLogo_GiguereMA_2023_11_29'
+## Preconditions: Needs Romain Durand's 'DMS-main' repository and 'aminoAcidProperties.txt'. and
+##                the 'GenerateWebLogo' function from the 'GenerateWebLogo_GiguereMA_2023_11_29'
 ##                file.
 
 # importing modules and packages
@@ -53,7 +53,7 @@ simplified_df = VerifyConditions_df.drop(columns=['index', 'Unnamed: 0', 'seq_ty
 ########################################################################################################################
 
 # Amino acid properties
-AAproperties = pd.read_table('all_indices_final_table_propensity.txt')
+AAproperties = pd.read_table('aminoAcidProperties.txt')
 AAproperties.rename(columns={'Aminoacid.1.letter': 'aa1'}, inplace=True)
 
 ########################################################################################################################
