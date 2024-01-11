@@ -30,37 +30,24 @@ pd.set_option('max_colwidth', None)
 
 # VIP. Very important parameter. The antifungal drugs.
 #drug1 = 'caspofungin'
-#drug1 = 'micafungin'
-drug1 = 'anidulafungin'
+drug1 = 'micafungin'
+#drug1 = 'anidulafungin'
 
-drug2 = 'caspofungin'
+#drug2 = 'caspofungin'
 #drug2 = 'micafungin'
-#drug2 = 'anidulafungin'
+drug2 = 'anidulafungin'
 
 ########################################################################################################################
 
-# importing data & Concatenate all dataframes
-list_df = []
-for d in glob.glob('DMS-main/processed_data/*'):
-    cset = os.path.basename(d).split('_')
-    cset_name = '_'.join(cset)
-    strain, locus, pool_type, compound = [cset[i] for i in (0, 1, 2, -1)]
+# importing data
+df = pd.read_csv('BY11nnkNT_classes.csv')
 
-    df = pd.read_csv(f'{d}/selcoeff_all_libraries.csv', index_col=0)
-    df['strain'] = strain
-    df['locus'] = locus
-    df['pool_type'] = pool_type
-    df['compound'] = compound
+VerifyConditions_df = df.loc[df['compound'].isin(['anidulafungin', 'caspofungin', 'micafungin']) &
+                             (df['seq_type'] == 'single') &
+                             (df['pool_type'] == 'single')].reset_index()
 
-    if pool_type != 'NaN':
-        list_df.append(df)
-
-master = pd.concat(list_df, ignore_index=True)
-master.groupby(['strain', 'locus', 'compound'  # Per input
-                ])[['nt_seq']].nunique().reset_index()
-
-shortMaster = master[['strain', 'locus', 'pool_type', 'seq_type', 'compound', 'median_s', 'aa_seq', 'Nham_aa', 'alt_aa', 'aa_pos']]
-shortMaster = shortMaster.loc[shortMaster['compound'].isin(['anidulafungin', 'caspofungin', 'micafungin'])]
+simplified_df = VerifyConditions_df.drop(columns=['index', 'Unnamed: 0', 'seq_type', 'pool_type', 'Nham_aa', 'cscore'])
+simplified_df['class'] = np.where((simplified_df['class'] == 'intermediary'), 'resistant', simplified_df['class'])
 
 ########################################################################################################################
 
@@ -71,13 +58,14 @@ AAproperties.rename(columns={'Aminoacid.1.letter': 'aa1'}, inplace=True)
 ########################################################################################################################
 
 # Single mutations dataframe on drug 1
-Drug1_master = shortMaster.loc[(shortMaster['seq_type'] == 'single') & (shortMaster['pool_type'] == 'single') & (shortMaster['strain'] == 'BY4741') & (shortMaster['locus'] == 'FKS1-HS1') & (shortMaster['compound'] == drug1)]
-Drug1_master = Drug1_master.loc[(Drug1_master['Nham_aa'] == 1) | ((Drug1_master['Nham_aa'] == 0) & (Drug1_master['median_s'] < 1))]
-Drug1_master['Resistance'] = np.where(Drug1_master['median_s'] >= 1, 'resistant', 'susceptible')
+Drug1_df = simplified_df.loc[simplified_df['compound'] == drug1]
 
-Drug1_master[['aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9']] = Drug1_master['aa_seq'].apply(lambda x: pd.Series(list(x)))
+Drug1_df[['aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9']] = Drug1_df['aa_seq'].apply(lambda x: pd.Series(list(x)))
+Drug1_df = Drug1_df.loc[(Drug1_df['aa1'] != '*') & (Drug1_df['aa2'] != '*') & (Drug1_df['aa3'] != '*') &
+                        (Drug1_df['aa4'] != '*') & (Drug1_df['aa5'] != '*') & (Drug1_df['aa6'] != '*') &
+                        (Drug1_df['aa7'] != '*') & (Drug1_df['aa8'] != '*') & (Drug1_df['aa9'] != '*')]
 
-Drug1_merged = pd.merge(left=Drug1_master, right=AAproperties, how='inner', indicator='location1', suffixes=(None, '_aa1'),
+Drug1_merged = pd.merge(left=Drug1_df, right=AAproperties, how='inner', indicator='location1', suffixes=(None, '_aa1'),
                   on='aa1')
 
 AAproperties.rename(columns={'aa1': 'aa2'}, inplace=True)
@@ -112,22 +100,25 @@ AAproperties.rename(columns={'aa8': 'aa9'}, inplace=True)
 Drug1_merged = pd.merge(left=Drug1_merged, right=AAproperties, how='inner', indicator='location9', suffixes=(None, '_aa9'),
                   on='aa9')
 
-X_train = Drug1_merged.drop(columns=['strain', 'locus', 'seq_type', 'aa_seq', 'pool_type', 'compound', 'median_s', 'Nham_aa', 'alt_aa', 'Resistance',
-                                      'location1', 'location2', 'location3', 'location4', 'location5', 'location6', 'location7', 'location8', 'location9',
-                                      'aa_pos', 'aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9'])
-y_train = Drug1_merged['Resistance']
+X_train = Drug1_merged.drop(columns=['compound', 'aa_seq', 'nt_seq', 's_corr', 'class',
+                                     'aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9',
+                                     'location1', 'location2', 'location3', 'location4', 'location5',
+                                     'location6', 'location7', 'location8', 'location9',])
+
+y_train = Drug1_merged['class']
 
 ########################################################################################################################
 
 # Single mutations dataframe on drug 2
-Drug2_master = shortMaster.loc[(shortMaster['seq_type'] == 'single') & (shortMaster['pool_type'] == 'single') & (shortMaster['strain'] == 'BY4741') & (shortMaster['locus'] == 'FKS1-HS1') & (shortMaster['compound'] == drug2)]
-Drug2_master = Drug2_master.loc[(Drug2_master['Nham_aa'] == 1) | ((Drug2_master['Nham_aa'] == 0) & (Drug2_master['median_s'] < 1))]
-Drug2_master['Resistance'] = np.where(Drug2_master['median_s'] >= 1, 'resistant', 'susceptible')
+Drug2_df = simplified_df.loc[simplified_df['compound'] == drug2]
 
-Drug2_master[['aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9']] = Drug2_master['aa_seq'].apply(lambda x: pd.Series(list(x)))
+Drug2_df[['aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9']] = Drug2_df['aa_seq'].apply(lambda x: pd.Series(list(x)))
+Drug2_df = Drug2_df.loc[(Drug2_df['aa1'] != '*') & (Drug2_df['aa2'] != '*') & (Drug2_df['aa3'] != '*') &
+                        (Drug2_df['aa4'] != '*') & (Drug2_df['aa5'] != '*') & (Drug2_df['aa6'] != '*') &
+                        (Drug2_df['aa7'] != '*') & (Drug2_df['aa8'] != '*') & (Drug2_df['aa9'] != '*')]
 
 AAproperties.rename(columns={'aa9': 'aa1'}, inplace=True)
-Drug2_merged = pd.merge(left=Drug2_master, right=AAproperties, how='inner', indicator='location1', suffixes=(None, '_aa1'),
+Drug2_merged = pd.merge(left=Drug2_df, right=AAproperties, how='inner', indicator='location1', suffixes=(None, '_aa1'),
                   on='aa1')
 
 AAproperties.rename(columns={'aa1': 'aa2'}, inplace=True)
@@ -162,18 +153,19 @@ AAproperties.rename(columns={'aa8': 'aa9'}, inplace=True)
 Drug2_merged = pd.merge(left=Drug2_merged, right=AAproperties, how='inner', indicator='location9', suffixes=(None, '_aa9'),
                   on='aa9')
 
-X_test = Drug2_merged.drop(columns=['strain', 'locus', 'seq_type', 'aa_seq', 'pool_type', 'compound', 'aa_pos', 'alt_aa', 'median_s', 'Nham_aa', 'Resistance',
-                                      'location1', 'location2', 'location3', 'location4', 'location5', 'location6', 'location7', 'location8', 'location9',
-                                    'aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9'])
-y_test = Drug2_merged['Resistance']
+X_test = Drug2_merged.drop(columns=['compound', 'aa_seq', 'nt_seq', 's_corr', 'class',
+                                     'aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9',
+                                    'location1', 'location2', 'location3', 'location4', 'location5',
+                                     'location6', 'location7', 'location8', 'location9'])
+
+y_test = Drug2_merged['class']
 
 ########################################################################################################################
 ## Machine Learning
-
 # Gridsearch & Random Forest
-#grid = {'n_estimators': [200, 300, 400, 500, 600],
+#grid = {'n_estimators': [100, 125, 150, 200, 250, 300, 400, 500, 600],
 #        'max_features': ['sqrt', 'log2', None],
-#       'max_depth': [5, 6, 7, None],
+#        'max_depth': [5, 6, 7, 10],
 #        'random_state': [18]
 #}
 #CV_rf = GridSearchCV(estimator=RandomForestClassifier(), param_grid=grid, n_jobs=-1, cv=10)
@@ -184,13 +176,15 @@ y_test = Drug2_merged['Resistance']
 # rf best parameters by drugs according to GridSearchCV.
 # Train: caspofungin. Pred: anidulafungin
 # Train: caspofungin. Pred: micafungin
+#rf = RandomForestClassifier(n_estimators= 300, max_features= 'log2', max_depth= 10, random_state= 18)
+
 # Train: anidulafungin. Pred: caspofungin
 # Train: anidulafungin. Pred: micafungin
-rf = RandomForestClassifier(n_estimators= 500, max_features= 'sqrt', max_depth= 5, random_state= 18)
+#rf = RandomForestClassifier(n_estimators= 300, max_features= 'sqrt', max_depth= 10, random_state= 18)
 
 # Train: micafungin. Pred: caspofungin
 # Train: micafungin. Pred: anidulafungin
-#rf = RandomForestClassifier(n_estimators= 200, max_features= 'sqrt', max_depth= None, random_state= 18)
+rf = RandomForestClassifier(n_estimators= 200, max_features= 'log2', max_depth= 10, random_state= 18)
 
 rf.fit(X_train, y_train)
 
@@ -202,20 +196,20 @@ print("Accuracy:", accuracy)
 # Matthews correlation coefficient
 mat = matthews_corrcoef(y_test, y_pred)
 print("Mat:", mat)
-#print(classification_report(y_test, y_pred))
+
 
 # Create the confusion matrix
-cmatrix = confusion_matrix(y_test, y_pred)
+cmatrix = confusion_matrix(y_test, y_pred, labels=['resistant', 'WT-like'])
 
 # Display the confusion matrix using seaborn heatmap
 plt.figure(figsize=(10, 10))
 sns.set(font_scale=3)
-sns.heatmap(cmatrix, annot=True, fmt='d', cmap='Blues', xticklabels=['resistant', 'susceptible'], yticklabels=['resistant', 'susceptible'], annot_kws={"size": 60})
+sns.heatmap(cmatrix, annot=True, fmt='d', cmap='Blues', xticklabels=['resistant', 'WT-like'], yticklabels=['resistant', 'WT-like'], annot_kws={'size': 60})
 plt.xlabel('Predicted Label')
 plt.ylabel('True Label')
 plt.title(f'Train: {drug1} \n Pred: {drug2} \n Confusion Matrix \n Accuracy : {accuracy:.3f}')
 plt.tight_layout()
-plt.savefig(f'ConfMatrix_TrainOn_{drug1}_toPredict_{drug2}.svg')
+plt.savefig(f'V4_ConfMatrix_{drug1}_toPredict_{drug2}.svg')
 plt.show()
 
 ########################################################################################################################
@@ -223,7 +217,7 @@ plt.show()
 # shap
 explainer = shap.TreeExplainer(rf)
 shap_values = explainer.shap_values(X_test)
-shap.summary_plot(shap_values[0], X_test, show=False, plot_size=(16,8), max_display=6)
+shap.summary_plot(shap_values[1], X_test, show=False, plot_size=(16,8), max_display=6)  # shap values[1] targets resistance
 
 # Modify background
 plt.gca().set_facecolor('white')
@@ -247,20 +241,18 @@ cb_ax.set_ylabel("Feature value", fontsize=20)
 #    scatter.set_sizes([100])  # Adjust the size as needed
 
 plt.tight_layout()
-plt.savefig(f'ShapValues_TrainOn_{drug1}_toPredict_{drug2}.svg')
+plt.savefig(f'V4_ShapValues_TrainOn_{drug1}_toPredict_{drug2}.svg')
 plt.show()
-
 
 ########################################################################################################################
 
 # ROC curves
 proba = rf.predict_proba(X_test)[::,1]
-fpr, tpr, thresh = roc_curve(y_test, proba, pos_label='susceptible')
+fpr, tpr, thresh = roc_curve(y_test, proba, pos_label='resistant')
 auc_score = roc_auc_score(y_test, proba)
-#print(f"AUC : {auc_score}")
 
 random_probs = [0 for i in range(len(y_test))]
-p_fpr, p_tpr, p_thresh = roc_curve(y_test, random_probs, pos_label='susceptible')
+p_fpr, p_tpr, p_thresh = roc_curve(y_test, random_probs, pos_label='resistant')
 
 plt.figure(figsize=(15, 15))
 plt.plot(fpr, tpr, color='blue', label= 'Random Forest Classifier')
@@ -269,23 +261,63 @@ plt.title(f'Train: {drug1}. Pred: {drug2} \n Model ROC curve \n AUC : {auc_score
 plt.xlabel('False Positive rate')
 plt.ylabel('True positive rate')
 plt.legend(loc='best')
-plt.savefig(f'ROC_TrainOn_{drug1}_toPredict_{drug2}.svg')
+plt.savefig(f'V4_ROC_TrainOn_{drug1}_toPredict_{drug2}.svg')
 plt.show()
 
 ########################################################################################################################
-
 # Heatmaps
-# dataframe avec alt_aa en rows, aa_pos en colonnes, puis values == misclassified ?
-SummaryData = Drug2_merged[["aa_seq", "median_s", "alt_aa", "aa_pos" ,"Resistance"]]
+
+SummaryData = Drug2_merged[["aa_seq", "s_corr", "class"]]
 
 # Find misclassified values
 misclassified = np.where(y_pred != y_test)
 List_misclassified = misclassified[0].tolist()
 SummaryData['misclassified'] = np.where(SummaryData.index.isin(List_misclassified), 1, None)
 
+
+def difference(string1, string2):
+    # Unpack strings into lists
+    string1 = [*string1]
+    string2 = [*string2]
+
+    A = set(string1)  # Store all string list items in set A
+    B = set(string2)
+
+    str_diff = A.difference(B)  # computes the difference of two sets and returns items that are unique to the first set
+    isEmpty = (len(str_diff) == 0)
+
+    if isEmpty:
+        return 'n'
+    else:
+        return str_diff
+
+list(difference("a", "v"))[0]
+
+alt_aa_list = []
+pos_aa_list = []
+wtaa = 'FLVLSLRDP'  # FKS1-HS1 Hotspot in aa
+split_wt = [*wtaa]
+
+for val in SummaryData['aa_seq']:
+    split_seq = [*val]
+    verify = False
+    for num in range(9):
+        dif = list(difference(split_seq[num], split_wt[num]))[0]
+        if dif != 'n':
+            alt_aa_list.append(dif)
+            pos_aa_list.append(num)
+            verify = True
+            break
+    if verify == False:
+        alt_aa_list.append(None)
+        pos_aa_list.append(None)
+
+SummaryData['alt_aa'] = alt_aa_list
+SummaryData['aa_pos'] = pos_aa_list
+
 # Construct heatmap dataframe
-heatmapDF_single = SummaryData.groupby(['alt_aa','aa_pos'])[['median_s']].median().reset_index()
-heatmapDF_wide = heatmapDF_single.pivot(index='alt_aa', columns='aa_pos', values='median_s')
+heatmapDF_single = SummaryData.groupby(['alt_aa','aa_pos'])[['s_corr']].median().reset_index()
+heatmapDF_wide = heatmapDF_single.pivot(index='alt_aa', columns='aa_pos', values='s_corr')
 
 heatmapDF_mask = SummaryData.groupby(['alt_aa','aa_pos'])[['misclassified']].max().reset_index()
 heatmapDF_wide_mask = heatmapDF_mask.pivot(index='alt_aa', columns='aa_pos', values='misclassified')
@@ -302,16 +334,16 @@ sns.set_theme(style='white')
 f, ax = plt.subplots()
 
 # Custom color palette
-ccmap = sns.color_palette("blend:#009B9E,#42B7B9,#A7D3D4,#F1F1F1,#E4C1D9,#D691C1,#C75DAB", # CARTOColors Tropic
+ccmap = sns.color_palette("blend:#009B9E,#42B7B9,#A7D3D4,#F1F1F1,#E4C1D9,#D691C1,#C75DAB",  # CARTOColors Tropic
                           as_cmap=True)
-ccmap.set_bad('.5') # Color for missing values or masked
+ccmap.set_bad('.5')  # Color for missing values or masked
 
 # Mask the correctly classified values.
 mask = pd.isnull(heatmapDF_wide_mask)
 
 # Draw heatmap
 ax = sns.heatmap(heatmapDF_wide, mask=mask,
-                 cmap=ccmap, center=0,
+                 cmap=ccmap, center = 0,
                  vmin=-2,
                  vmax=2
                 )
@@ -320,11 +352,11 @@ ax.set_ylabel(None)
 plt.yticks(rotation=0)
 ax.set_title(f'Train on {drug1} to predict {drug2}.\n Heatmap of misclassified mutants')
 
-wtaa = 'FLVLSLRDP' #FKS1-HS1 Hotspot in aa
+wtaa = 'FLVLSLRDP'  # FKS1-HS1 Hotspot in aa
 wtcoord_aa = [(i+0.5, list(aa_sort_order).index(v)+0.5) for i,v in enumerate(wtaa)]
 
 for o in wtcoord_aa:
-    ax.plot(o[0],o[1],'or') # displays WT codons by marking them with red (r) circles (o)
+    ax.plot(o[0],o[1],'or')  # displays WT codons by marking them with red (r) circles (o)
 
-plt.savefig(f'Heatmap_misclassified_TrainOn_{drug1}_ToPredict_{drug2}.svg', format='svg', dpi=300)
+plt.savefig(f'V4_Heatmap_misclassified_TrainOn_{drug1}_ToPredict_{drug2}.svg', format='svg', dpi=300)
 plt.show()

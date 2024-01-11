@@ -290,11 +290,6 @@ heatmapDF_wide = heatmapDF_single.pivot(index='alt_aa', columns='aa_pos', values
 heatmapDF_mask = SummaryData.groupby(['alt_aa','aa_pos'])[['misclassified']].max().reset_index()
 heatmapDF_wide_mask = heatmapDF_mask.pivot(index='alt_aa', columns='aa_pos', values='misclassified')
 
-aa_sort_order = 'PGCQNTSEDKHRWYFMLIVA'
-aa_sort_dic = dict(zip(list(aa_sort_order), list(range(0,len(aa_sort_order)))))
-heatmapDF_wide.sort_index(key=lambda x: x.map(aa_sort_dic), inplace=True)
-heatmapDF_wide_mask.sort_index(key=lambda x: x.map(aa_sort_dic), inplace=True)
-
 # Purge graph space
 sns.set(rc = {'figure.figsize':(4,6),
              })
@@ -311,7 +306,7 @@ mask = pd.isnull(heatmapDF_wide_mask)
 
 # Draw heatmap
 ax = sns.heatmap(heatmapDF_wide, mask=mask,
-                 cmap=ccmap, center=0,
+                 cmap=ccmap, center = 0,
                  vmin=-2,
                  vmax=2
                 )
@@ -320,6 +315,7 @@ ax.set_ylabel(None)
 plt.yticks(rotation=0)
 ax.set_title(f'Train on {drug1} to predict {drug2}.\n Heatmap of misclassified mutants')
 
+aa_sort_order = 'ACEDFGHIKLMNPQRSTVWY' # alphabetical
 wtaa = 'FLVLSLRDP' #FKS1-HS1 Hotspot in aa
 wtcoord_aa = [(i+0.5, list(aa_sort_order).index(v)+0.5) for i,v in enumerate(wtaa)]
 
