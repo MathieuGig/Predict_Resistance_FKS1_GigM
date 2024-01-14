@@ -8,8 +8,6 @@
 # importing modules and packages
 import pandas as pd
 import numpy as np
-from matplotlib.colors import ListedColormap
-
 np.bool = np.bool_
 np.int = np.int_
 import matplotlib.pyplot as plt
@@ -324,8 +322,6 @@ ccmap.set_bad('.5')  # Color for missing values or masked
 
 # Mask the correctly classified values.
 mask = pd.isnull(heatmapDF_wide_mask)
-#mask = pd.isnull(heatmapDF_wide)
-#mask = np.where(heatmapDF_wide_mask[heatmapDF_wide_mask < 0.5], True, False)
 
 # Draw heatmap
 ax = sns.heatmap(heatmapDF_wide, mask=mask,
@@ -336,10 +332,6 @@ ax.set_xlabel('Position in hotspot')
 ax.set_ylabel(None)
 plt.yticks(rotation=0)
 ax.set_title(f'Train on {drug1} to predict {drug2}.\n Heatmap of misclassified mutants')
-
-# Here, missing values from the data are put in black.
-for i, j in zip(*np.where(heatmapDF_wide.isnull())):
-    plt.gca().add_patch(plt.Rectangle((j, i), 1, 1, fill=True, color='black'))
 
 wtaa = 'FLVLSLRDP'  # FKS1-HS1 Hotspot in aa
 wtcoord_aa = [(i + 0.5, list(aa_sort_order).index(v) + 0.5) for i, v in enumerate(wtaa)]

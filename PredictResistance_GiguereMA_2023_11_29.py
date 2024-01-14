@@ -15,10 +15,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score, matthews_corrcoef, roc_curve
 from sklearn.ensemble import RandomForestClassifier
-
 import glob
 import os
-
 import shap # v0.39.0
 shap.initjs()
 
@@ -68,11 +66,6 @@ AAproperties.rename(columns={'Aminoacid.1.letter': 'aa1'}, inplace=True)
 Single_master = shortMaster.loc[(shortMaster['seq_type'] == 'single') & (shortMaster['pool_type'] == 'single') & (shortMaster['strain'] == 'BY4741') & (shortMaster['locus'] == 'FKS1-HS1') & (shortMaster['compound'] == drug)]
 Single_master['Resistance'] = np.where(Single_master['median_s'] >= 1, 'resistant', 'susceptible')
 
-# Remove duplicates
-#Single_master = Single_master.drop(columns=['median_s'])
-#Single_master = Single_master.drop_duplicates()
-#Single_master = Single_master.reset_index(drop=True)
-
 # Explode aa_seq into many columns
 Single_master[['aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9']] = Single_master['aa_seq'].apply(lambda x: pd.Series(list(x)))
 
@@ -112,6 +105,7 @@ AAproperties.rename(columns={'aa8': 'aa9'}, inplace=True)
 Single_merged = pd.merge(left=Single_merged, right=AAproperties, how='inner', indicator='location9', suffixes=(None, '_aa9'),
                   on='aa9')
 
+# Get training data for machine learning.
 X_train = Single_merged.drop(columns=['strain', 'locus', 'seq_type', 'aa_seq', 'pool_type', 'compound', 'median_s', 'Nham_aa', 'alt_aa', 'Resistance',
                                       'location1', 'location2', 'location3', 'location4', 'location5', 'location6', 'location7', 'location8', 'location9',
                                       'aa_pos', 'aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9'])
@@ -120,7 +114,7 @@ y_train = Single_merged['Resistance']
 ########################################################################################################################
 
 # Density plot of Single mutations
-# Uncomment if you want
+# Uncomment if you want to see it.
 #sns.histplot(data=Single_master, x='median_s', element='step')
 #plt.title('Resistance Score Histogram', fontsize=24)
 #plt.xlabel('Resistance score', fontsize=20)
@@ -180,6 +174,7 @@ AAproperties.rename(columns={'aa8': 'aa9'}, inplace=True)
 Ortho_merged = pd.merge(left=Ortho_merged, right=AAproperties, how='inner', indicator='location9', suffixes=(None, '_aa9'),
                   on='aa9')
 
+# Get testing data for machine learning.
 X_test = Ortho_merged.drop(columns=['strain', 'locus', 'seq_type', 'aa_seq', 'pool_type', 'compound', 'median_s', 'Nham_aa', 'Resistance',
                                       'location1', 'location2', 'location3', 'location4', 'location5', 'location6', 'location7', 'location8', 'location9',
                                     'aa1', 'aa2', 'aa3', 'aa4', 'aa5', 'aa6', 'aa7', 'aa8', 'aa9'])
@@ -188,7 +183,7 @@ y_test = Ortho_merged['Resistance']
 ########################################################################################################################
 
 # Machine Learning
-
+# Already performed Gridsearch.
 rf = RandomForestClassifier(n_estimators= 250, max_features= 'sqrt', max_depth= 5, random_state= 18)
 
 rf.fit(X_train, y_train)
