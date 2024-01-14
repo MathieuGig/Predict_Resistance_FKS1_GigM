@@ -9,5 +9,5 @@ Files :\
 'aminoAcidProperties.txt' : The amino acid properties used as features for machine learning. They come from Expasy's Protscale tool. \
 Link: https://web.expasy.org/protscale/ \
 'PredictResistance_GiguereMA_2023_11_29.py' : Python code to predict the resistance of FKS1 orthologs to echinocandins.\
-'PredictResSinglesOtherDrug_Giguere_MA_2023_11_29.py' : Python code to predict the resistance of FKS1 single mutants to different echinocandins.\
+'V5_PredictResSinglesOtherDrug_GiguereMA_2024_01_12.py' : Python code to predict the resistance of FKS1 single mutants to different echinocandins.\
 'fks1_dataframe.csv' : A result of my previous ortholog taxonomic analysis. I use it in 'PredictResistance_GiguereMA_2023_11_29.py'.
